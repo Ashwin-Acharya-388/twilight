@@ -1,0 +1,22 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+
+# Raw and generated dataset files (too large for git)
+data/
+Heart Disease Risk Prediction Dataset/
+*.csv
+*.xls
+*.xlsx
+*.zip
+
+# Scratch/test files
+scratch_test.py
