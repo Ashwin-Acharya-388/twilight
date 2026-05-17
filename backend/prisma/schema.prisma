@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PlanType {
+  INDIVIDUAL
+  FAMILY
+  SENIOR
+  GROUP
+  OTHER
+}
+
+model User {
+  id           Int                   @id @default(autoincrement())
+  email        String                @unique
+  passwordHash String
+  createdAt    DateTime              @default(now())
+  lastLogin    DateTime?
+  profile      Profile?
+  documents    ExtractedDocument[]
+  assessments  RiskAssessment[]
+  recommendations Recommendation[]
+  history      ComparisonHistory[]
+}
+
+model Profile {
+  id                    Int      @id @default(autoincrement())
+  user                  User     @relation(fields: [userId], references: [id])
+  userId                Int      @unique
+  fullName              String?
+  age                   Int?
+  gender                Gender?
+  bmi                   Float?
+  heightCm              Float?
+  weightKg              Float?
+  occupation            String?
+  city                  String?
+  annualIncome          Float?
+  smoker                Boolean?
+  alcoholUse            Boolean?
+  exerciseFrequency     String?
+  familyHistory         String?
+  preExistingConditions Json?
+  maritalStatus         String?
+  dependents            Int?
+  lifestyleNotes        String?
+}
+
+model ExtractedDocument {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+  fileName      String
+  rawText       String?
+  extractedJson Json?
+  hba1c         Float?
+  glucose       Float?
+  systolicBp    Int?
+  diastolicBp   Int?
+  cholesterol   Float?
+  uploadedAt    DateTime @default(now())
+}
+
+model RiskAssessment {
+  id                 Int      @id @default(autoincrement())
+  user               User     @relation(fields: [userId], references: [id])
+  userId             Int
+  diabetesProbability Float
+  cardiacProbability  Float
+  overallRiskScore    Float
+  riskTier            String
+  confidenceScore     Float
+  generatedAt         DateTime @default(now())
+  recommendations     Recommendation[]
+}
+
+model InsurancePlan {
+  id                     Int                   @id @default(autoincrement())
+  insurerName            String
+  planName               String
+  planType               PlanType
+  premiumMonthly         Float
+  coverageLimit          Float?
+  deductible             Float?
+  roomRentLimit          Float?
+  icuCoverage            Boolean?
+  networkHospitalsCount  Int?
+  waitingPeriodMonths    Int?
+  maternityCover         Boolean?
+  dentalCover            Boolean?
+  visionCover            Boolean?
+  criticalIllnessCover   Boolean?
+  ambulanceCover         Boolean?
+  cashlessHospitalization Boolean?
+  preExistingDiseaseCover Boolean?
+  diabetesCovered         Boolean?
+  cardiacCovered          Boolean?
+  ayushCover              Boolean?
+  familyFloater           Boolean?
+  wardType                String?
+  copayPercentage         Float?
+  exclusions              String?
+  riskTierSupported       String?
+  filters                 PlanFilter[]
+  recommendations         Recommendation[]
+}
+
+model PlanFilter {
+  id                    Int            @id @default(autoincrement())
+  plan                  InsurancePlan  @relation(fields: [planId], references: [id])
+  planId                Int
+  wardType              String?
+  hospitalNetworkType   String?
+  roomCategory          String?
+  claimSettlementRatio  Float?
+  ageLimit              Int?
+  geographicCoverage    String?
+  monthlyPremiumRange   String?
+  addOnAvailable        Boolean?
+}
+
+model Recommendation {
+  id                    Int             @id @default(autoincrement())
+  user                  User            @relation(fields: [userId], references: [id])
+  userId                Int
+  plan                  InsurancePlan   @relation(fields: [planId], references: [id])
+  planId                Int
+  assessment            RiskAssessment  @relation(fields: [riskAssessmentId], references: [id])
+  riskAssessmentId      Int
+  suitabilityScore      Float
+  affordabilityScore    Float
+  coverageMatchScore    Float
+  riskAlignmentScore    Float
+  explanation           String
+  componentScores       Json
+  recommendedAt         DateTime        @default(now())
+}
+
+model ComparisonHistory {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int
+  comparedPlanIds Json
+  comparedAt     DateTime @default(now())
+}
